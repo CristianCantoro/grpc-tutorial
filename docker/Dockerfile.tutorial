@@ -1,0 +1,35 @@
+# base image
+FROM grpc-tutorial-proto:latest
+
+# set maintainer (MAINTAINER is deprecated)
+# See:
+#   https://docs.docker.com/engine/reference/builder/#maintainer-deprecated
+LABEL maintainer="cristian.consonni@eurecat.org"
+
+# set work directory to /home/tutorial
+WORKDIR /home/tutorial
+
+# copy requirements to /home/tutorial/requirements.txt
+COPY --chown=tutorial:tutorial requirements.txt* requirements.txt
+
+# copy ./app/ to /home/tutorial/app/
+COPY --chown=tutorial:tutorial ./app /home/tutorial/app
+
+# copy directory with protobuf definitions
+COPY --chown=tutorial:tutorial ./proto /home/tutorial/proto
+
+# switch to 'tutorial' user
+USER tutorial:tutorial
+
+RUN  python3 -m grpc_tools.protoc \
+  -Iproto \
+  --python_out=app \
+  --grpc_python_out=app \
+    helloworld.proto
+
+ENV PYTHONUNBUFFERED=1
+
+EXPOSE 50051
+
+# exec categorizer.py as entrypoint
+ENTRYPOINT ["python3"]

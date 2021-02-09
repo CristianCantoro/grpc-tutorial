@@ -1,0 +1,30 @@
+# base image
+FROM python:3.8.2
+
+# set maintainer (MAINTAINER is deprecated)
+# See:
+#   https://docs.docker.com/engine/reference/builder/#maintainer-deprecated
+LABEL maintainer="cristian.consonni@eurecat.org"
+
+# upgrade pip
+RUN python3 -m pip install --no-cache-dir --upgrade pip
+
+# add user 'tutorial'
+RUN useradd -m tutorial
+
+# set work directory to /home/tutorial
+WORKDIR /home/tutorial
+
+# copy requirements to /home/tutorial/requirements.txt
+COPY --chown=tutorial:tutorial requirements.txt* requirements.txt
+
+# install requirements.txt
+RUN python3 -m pip install --no-cache-dir -r requirements.txt
+
+# switch to 'tutorial' user
+USER tutorial:tutorial
+
+ENV PYTHONUNBUFFERED=1
+
+# exec categorizer.py as entrypoint
+ENTRYPOINT ["python3"]
